@@ -6,7 +6,11 @@
 
 ## [Sign In with Google for Web](https://developers.google.com/identity/gsi/web/guides/overview)
 
-[Get your Google API client ID](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid)
+### [设置](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid)
+
+已获授权的 JavaScript 来源 - 添加登录页地址
+
+对于本地测试或开发，请同时添加 `http://localhost` 和 `http://localhost:<port_number>`
 
 ## 运行
 
