@@ -12,6 +12,10 @@
 
 对于本地测试或开发，请同时添加 `http://localhost` 和 `http://localhost:<port_number>`
 
+### [流程](https://developers.google.com/identity/gsi/web/guides/integrate)
+
+用户操作后，前端请求后端，用token获取用户信息
+
 ## 运行
 
 1. 克隆项目 `git clone -b google https://github.com/violetpupil/demos demos-google`
