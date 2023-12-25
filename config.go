@@ -17,6 +17,5 @@ func init() {
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		Endpoint:     google.Endpoint,
-		RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
 	}
 }
