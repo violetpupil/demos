@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goinggo/mapstructure"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/idtoken"
 )
@@ -63,6 +64,29 @@ var (
 	ErrIdtokenValidateFail   = errors.New("idtoken validate fail")
 )
 
+type Claims struct {
+	Aud    string `mapstructure:"aud"`
+	Azp    string `mapstructure:"azp"`
+	IAt    int    `mapstructure:"iat"`
+	Exp    int    `mapstructure:"exp"`
+	Iss    string `mapstructure:"iss"`
+	Jti    string `mapstructure:"jti"`
+	Locale string `mapstructure:"locale"`
+	Nbf    int    `mapstructure:"nbf"`
+
+	// 请仅使用 Google ID 令牌 sub 字段作为用户的标识符
+	// 一个 Google 帐号在不同时间点可能有多个电子邮件地址
+	Email         string `mapstructure:"email"`
+	EmailVerified bool   `mapstructure:"email_verified"`
+	FamilyName    string `mapstructure:"family_name"`
+	GivenName     string `mapstructure:"given_name"`
+	Name          string `mapstructure:"name"`
+	Picture       string `mapstructure:"picture"`
+	Sub           string `mapstructure:"sub"`
+}
+
+// signIn 处理token
+// https://developers.google.com/identity/gsi/web/guides/verify-google-id-token
 func signIn(body Body, cookieCsrfToken string) error {
 	logger := logrus.WithFields(logrus.Fields{
 		"body":            fmt.Sprintf("%+v", body),
@@ -81,5 +105,13 @@ func signIn(body Body, cookieCsrfToken string) error {
 		return ErrIdtokenValidateFail
 	}
 	logger.Infof("payload %+v", payload)
+
+	var claims Claims
+	err = mapstructure.Decode(payload.Claims, &claims)
+	if err != nil {
+		logger.Errorln("decode claims error", err)
+		return err
+	}
+	logger.Infof("claims %+v", claims)
 	return nil
 }
