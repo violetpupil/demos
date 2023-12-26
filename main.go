@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/api/idtoken"
 )
 
 func main() {
@@ -30,12 +33,22 @@ type Body struct {
 // @router /signIn [post]
 func SignIn(c *gin.Context) {
 	var body Body
+	var cookieCsrfToken string
 	err := c.ShouldBind(&body)
 	if err != nil {
 		logrus.Errorln("bind error", err)
 		goto FIN
 	}
-	signIn(body)
+	cookieCsrfToken, err = c.Cookie("g_csrf_token")
+	if err != nil {
+		logrus.Errorln("get cookie error", err)
+		goto FIN
+	}
+	err = signIn(body, cookieCsrfToken)
+	if err != nil {
+		logrus.Errorln("process error", err)
+		goto FIN
+	}
 
 FIN:
 	if err != nil {
@@ -45,6 +58,28 @@ FIN:
 	}
 }
 
-func signIn(body Body) {
-	logrus.Infof("sign in body %+v\n", body)
+var (
+	ErrCsrfTokenValidateFail = errors.New("csrf token validate fail")
+	ErrIdtokenValidateFail   = errors.New("idtoken validate fail")
+)
+
+func signIn(body Body, cookieCsrfToken string) error {
+	logger := logrus.WithFields(logrus.Fields{
+		"body":            fmt.Sprintf("%+v", body),
+		"cookieCsrfToken": cookieCsrfToken,
+	})
+	logger.Infoln("sign in argument")
+
+	if cookieCsrfToken == "" || body.GCsrfToken == "" ||
+		cookieCsrfToken != body.GCsrfToken {
+		return ErrCsrfTokenValidateFail
+	}
+
+	payload, err := idtoken.Validate(context.Background(), body.Credential, Config.ClientID)
+	if err != nil {
+		logger.Errorln("idtoken validate error", err)
+		return ErrIdtokenValidateFail
+	}
+	logger.Infof("payload %+v", payload)
+	return nil
 }
